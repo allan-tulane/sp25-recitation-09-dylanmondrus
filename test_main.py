@@ -37,3 +37,4 @@ def test_prim():
     assert min([sum1, sum2]) == 10
     assert max([sum1, sum2]) == 12
     ###    
+

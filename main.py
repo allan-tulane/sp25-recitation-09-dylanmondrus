@@ -30,14 +30,20 @@ def prim(graph):
 
                 return prim_helper(visited, frontier, tree)
         
-    # pick first node as source arbitrarily
-    source = list(graph.keys())[0]
-    frontier = []
-    heappush(frontier, (0, source, source))
-    visited = set()  # store the visited nodes (don't need distance anymore)
-    tree = set()
-    prim_helper(visited, frontier, tree)
-    return tree
+    all_trees = []
+    visited_global = set()
+
+    for source in graph:
+        if source not in visited_global:
+            # pick first node as source arbitrarily
+            frontier = []
+            heappush(frontier, (0, source, source))
+            visited = set()  # store the visited nodes (don't need distance anymore)
+            tree = set()
+            prim_helper(visited, frontier, tree)
+            visited_global.update(visited)
+            all_trees.append(tree)
+    return all_trees
 
 def test_prim():    
     graph = {
@@ -82,7 +88,33 @@ def mst_from_points(points):
       tree connecting the cities in the input.
     """
     ###TODO
-    pass
+    if not points:
+        return []
+    
+    graph = {name: [] for name, _, _ in points}
+    for i in range(len(points)):
+        for j in range(i + 1, len(points)):
+            p1, p2 = points[i], points[j]
+            dist = euclidean_distance(p1, p2)
+            graph[p1[0]].append((p2[0], dist))
+            graph[p2[0]].append((p1[0], dist))
+
+    start = points[0][0]
+    visited = set()
+    frontier = [(0, start, start)]
+    tree = []
+
+    while frontier and len(visited) < len(points):
+        weight, node, parents = heappop(frontier)
+        if node in visited:
+            continue
+        if node != parents:
+            tree.append((weight, node, parents))
+        visited.add(node)
+        for neighbor, w in graph[node]:
+            if neighbor not in visited:
+                heappush(frontier, (w, neighbor, node))
+    return tree
 
 def euclidean_distance(p1, p2):
     return sqrt((p1[1] - p2[1])**2 + (p1[2] - p2[2])**2)
@@ -102,3 +134,4 @@ def test_mst_from_points():
     assert round(sum(e[0] for e in tree), 2) == 19.04
 
 
+test_mst_from_points()
